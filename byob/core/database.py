@@ -11,10 +11,10 @@ import datetime
 import collections
 
 # modules
-import util
+import core.util as util
 
 try:
-    unicode        # Python 2
+    unicode  =str      # Python 2
 except NameError:
     unicode = str  # Python 3
 
